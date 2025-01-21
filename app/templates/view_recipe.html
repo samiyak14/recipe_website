@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ recipe.title }}</title>
+</head>
+<body>
+    <h1>{{ recipe.title }}</h1>
+    
+    <h3>Ingredients:</h3>
+    <ul>
+        {% for ingredient in recipe.get_ingredients_list() %}
+        <li>{{ ingredient }}</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Steps:</h3>
+    <p>{{ recipe.steps }}</p>
+
+    {% if recipe.video_url %}
+    <h3>Watch Video:</h3>
+    <a href="{{ recipe.video_url }}" target="_blank">Click here to watch</a>
+    {% endif %}
+
+    <a href="/">Back to Home</a>
+</body>
+</html>
+

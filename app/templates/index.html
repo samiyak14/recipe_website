@@ -1,0 +1,10 @@
+<h1>Welcome to the Recipe Website</h1>
+<ul>
+  {% for recipe in recipes %}
+    <li>
+      <h3>{{ recipe.title }}</h3>
+      <p>Ingredients: {{ recipe.ingredients }}</p>
+      <p><a href="/recipe/{{ recipe.id }}">View Recipe</a></p>
+    </li>
+  {% endfor %}
+</ul>

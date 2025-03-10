@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center fw-bold text-primary">Delicious Recipes</h1>
+    <p class="text-center text-muted">Explore and enjoy mouthwatering recipes!</p>
+
+    <div class="row">
+        {% for recipe in recipes %}
+        <div class="col-md-4 col-sm-6 mb-4">
+            <div class="card shadow-sm border-0">
+                {% if recipe.image_path %}
+                <img src="{{ url_for('static', filename=recipe.image_path.replace('static/', '')) }}" 
+                     class="card-img-top" alt="{{ recipe.title }}">
+                {% endif %}
+                
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold">{{ recipe.title }}</h5>
+                    <p class="card-text text-muted">{{ recipe.ingredients[:100] }}...</p>
+                    <a href="{{ url_for('routes.view_recipe', recipe_id=recipe.id) }}" class="btn btn-primary">
+                        View Recipe
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

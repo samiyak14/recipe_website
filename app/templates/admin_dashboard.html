@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center">Admin Dashboard</h1>
+    <p>Welcome, Admin! You can manage recipes here.</p>
+    
+    <a href="{{ url_for('routes.add_recipe') }}" class="btn btn-success">Add New Recipe</a>
+    <a href="{{ url_for('routes.admin_logout') }}" class="btn btn-danger">Logout</a>
+</div>
+{% endblock %}

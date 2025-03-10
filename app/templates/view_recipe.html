@@ -1,29 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ recipe.title }}</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
     <h1>{{ recipe.title }}</h1>
-    
+
+    {% if recipe.image_path %}
+    <img src="{{ url_for('static', filename=recipe.image_path.replace('static/', '')) }}" 
+         alt="{{ recipe.title }}" 
+         class="img-fluid">
+{% else %}
+    <p>No image available</p>
+{% endif %}
+
     <h3>Ingredients:</h3>
-    <ul>
-        {% for ingredient in recipe.get_ingredients_list() %}
-        <li>{{ ingredient }}</li>
-        {% endfor %}
-    </ul>
+    <p>{{ recipe.ingredients }}</p>
 
     <h3>Steps:</h3>
     <p>{{ recipe.steps }}</p>
+    <p>Video Path: {{ recipe.video_path }}</p>  <!-- Debugging line -->
+    
+    {% if recipe.video_path %}
+    <video width="600" height="400" controls>
+        <source src="{{ url_for('static', filename=recipe.video_path.replace('static/', '')) }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+{% endif %}
+</div>
 
-    {% if recipe.video_url %}
-    <h3>Watch Video:</h3>
-    <a href="{{ recipe.video_url }}" target="_blank">Click here to watch</a>
-    {% endif %}
-
-    <a href="/">Back to Home</a>
-</body>
-</html>
-
+{% endblock %}

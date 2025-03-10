@@ -1,16 +1,20 @@
-# app/models.py
-
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash
 
-db=SQLAlchemy()
+db = SQLAlchemy()
 
 class Recipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    ingredients = db.Column(db.String(255), nullable=False)  # Comma-separated ingredients
+    ingredients = db.Column(db.Text, nullable=False)
     steps = db.Column(db.Text, nullable=False)
-    video_url = db.Column(db.String(200), nullable=True)  # Optional: URL to video
-    is_premium = db.Column(db.Boolean, default=False)  # True for premium, False for free
+    is_premium = db.Column(db.Boolean, default=False)
+    image_path = db.Column(db.String(255))  # Stores relative file path
+    video_path = db.Column(db.String(255))  # Stores relative file path
+class Admin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)  # Hashed password
 
-    def get_ingredients_list(self):
-        return self.ingredients.split(',')  # Splits the ingredients into a list
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)

@@ -1,11 +1,41 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <h1 class="text-center">Admin Dashboard</h1>
-    <p>Welcome, Admin! You can manage recipes here.</p>
-    
-    <a href="{{ url_for('routes.add_recipe') }}" class="btn btn-success">Add New Recipe</a>
-    <a href="{{ url_for('routes.admin_logout') }}" class="btn btn-danger">Logout</a>
-</div>
+<!-- templates/admin_dashboard.html -->
+<h2>Admin Dashboard</h2>
+<a href="{{ url_for('routes.add_recipe') }}" class="btn btn-success">➕ Add Recipe</a>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Tags</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for recipe in recipes %}
+        <tr>
+            <td>{{ recipe.id }}</td>
+            <td>{{ recipe.title }}</td>
+            <td>{{ recipe.tags or "No Tags" }}</td>
+            <td>
+                <a href="{{ url_for('routes.edit_recipe', recipe_id=recipe.id) }}" class="btn btn-warning">✏️ Edit</a>
+                <form action="{{ url_for('routes.delete_recipe', recipe_id=recipe.id) }}" method="POST" style="display:inline;" onsubmit="return confirmDelete('{{ recipe.title }}')">
+                    <button type="submit" class="btn btn-danger">🗑 Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- JavaScript for delete confirmation -->
+<script>
+    function confirmDelete(recipeTitle) {
+        return confirm("Are you sure you want to delete the recipe: " + recipeTitle + "?");
+    }
+</script>
+
 {% endblock %}

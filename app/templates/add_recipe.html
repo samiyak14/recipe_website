@@ -1,25 +1,58 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Add New Recipe</h2>
-    <form method="POST">
+<div class="container mt-5">
+    <h2 class="mb-4">Add New Recipe</h2>
+
+    <!-- Display image and video preview if they exist -->
+    {% if recipe %}
+        {% if recipe.image_path %}
+            <img src="{{ url_for('static', filename=recipe.image_path) }}" width="200" class="mb-3">
+        {% endif %}
+
+        {% if recipe.video_path %}
+            <video width="320" height="240" controls class="mb-3">
+                <source src="{{ url_for('static', filename=recipe.video_path) }}" type="video/mp4">
+            </video>
+        {% endif %}
+    {% endif %}
+
+    <form action="{{ url_for('routes.add_recipe') }}" method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
         <div class="mb-3">
-            <label class="form-label">Title</label>
-            <input type="text" name="title" class="form-control" required>
+            <label for="title" class="form-label">Recipe Title:</label>
+            <input type="text" id="title" name="title" class="form-control" required>
         </div>
+
         <div class="mb-3">
-            <label class="form-label">Ingredients</label>
-            <textarea name="ingredients" class="form-control" rows="4" required></textarea>
+            <label for="tags" class="form-label">Tags (comma-separated):</label>
+            <input type="text" id="tags" name="tags" class="form-control">
         </div>
+
         <div class="mb-3">
-            <label class="form-label">Steps</label>
-            <textarea name="steps" class="form-control" rows="4" required></textarea>
+            <label for="ingredients" class="form-label">Ingredients:</label>
+            <textarea id="ingredients" name="ingredients" class="form-control" rows="4" required></textarea>
         </div>
+
         <div class="mb-3">
-            <input type="checkbox" name="is_premium"> Mark as Premium Recipe
+            <label for="instructions" class="form-label">Instructions:</label>
+            <textarea id="instructions" name="instructions" class="form-control" rows="6" required></textarea>
         </div>
-        <button type="submit" class="btn btn-primary">Add Recipe</button>
+
+        <div class="mb-3">
+            <label for="image" class="form-label">Upload Image:</label>
+            <input type="file" id="image" name="image" class="form-control" accept="image/*">
+        </div>
+
+        <div class="mb-3">
+            <label for="video" class="form-label">Upload Video:</label>
+            <input type="file" id="video" name="video" class="form-control" accept="video/*">
+        </div>
+
+        <button type="submit" class="btn btn-success">Add Recipe</button>
     </form>
+
+    <a href="{{ url_for('routes.admin_dashboard') }}" class="btn btn-secondary mt-3">Back to Admin Dashboard</a>
 </div>
 {% endblock %}

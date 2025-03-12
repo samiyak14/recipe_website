@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Edit Profile</h2>
+    
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        
+        <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            {{ form.name(class="form-control") }}
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Username</label>
+            {{ form.username(class="form-control") }}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            {{ form.email(class="form-control") }}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Current Profile Photo</label><br>
+            {% if current_user.profile_photo %}
+                <img src="{{ url_for('static', filename='current_user.profile_photo') }}" 
+                     alt="Profile Photo" class="img-thumbnail" width="150">
+            {% else %}
+                <p>No profile photo uploaded</p>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Upload New Profile Photo</label>
+            {{ form.profile_photo(class="form-control") }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update Profile</button>
+    </form>
+</div>
+{% endblock %}

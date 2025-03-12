@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Edit Recipe</h2>
+
+<form action="{{ url_for('routes.edit_recipe', recipe_id=recipe.id) }}" method="POST" enctype="multipart/form-data">
+    <label for="title">Recipe Title:</label>
+    <input type="text" id="title" name="title" value="{{ recipe.title }}" required><br><br>
+
+    <label for="tags">Tags (comma-separated):</label>
+    <input type="text" id="tags" name="tags" value="{{ recipe.tags }}"><br><br>
+
+    <label for="ingredients">Ingredients:</label>
+    <textarea id="ingredients" name="ingredients" rows="4" required>{{ recipe.ingredients }}</textarea><br><br>
+
+    <label for="instructions">Instructions:</label>
+    <textarea id="instructions" name="instructions" rows="6" required>{{ recipe.instructions }}</textarea><br><br>
+
+    <label for="image">Current Image:</label><br>
+    {% if recipe.image_path %}
+        <img src="{{ url_for('static', filename=recipe.image_path) }}" width="200">
+    {% else %}
+        <p>No image uploaded</p>
+    {% endif %}
+    <label for="image">Upload New Image:</label>
+    <input type="file" id="image" name="image" accept="image/*"><br><br>
+
+    <label for="video">Current Video:</label><br>
+    {% if recipe.video_path %}
+        <video width="320" height="240" controls>
+            <source src="{{ url_for('static', filename=recipe.video_path) }}" type="video/mp4">
+        </video>
+    {% else %}
+        <p>No video uploaded</p>
+    {% endif %}
+    <label for="video">Upload New Video:</label>
+    <input type="file" id="video" name="video" accept="video/*"><br><br>
+
+    <button type="submit" class="btn btn-primary">Update Recipe</button>
+</form>
+
+<a href="{{ url_for('routes.admin_dashboard') }}">Back to Admin Dashboard</a>
+{% endblock %}

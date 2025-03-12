@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Welcome, {{ current_user.name }}</h2>
+{% if current_user.is_premium %}
+    <p>You are a Premium User! Enjoy exclusive recipes.</p>
+{% else %}
+    <p>Upgrade to premium for exclusive content.</p>
+{% endif %}
+<a href="{{ url_for('routes.user_logout') }}">Logout</a>
+{% endblock %}

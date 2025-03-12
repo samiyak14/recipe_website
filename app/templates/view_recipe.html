@@ -4,27 +4,33 @@
 <div class="container">
     <h1>{{ recipe.title }}</h1>
 
+    <!-- Debugging: Display Image Path -->
+    <p>Image Path: {{ recipe.image_path }}</p>
+
     {% if recipe.image_path %}
-    <img src="{{ url_for('static', filename=recipe.image_path.replace('static/', '')) }}" 
+    <img src="{{ url_for('static', filename=recipe.image_path) }}" 
          alt="{{ recipe.title }}" 
          class="img-fluid">
-{% else %}
+    {% else %}
     <p>No image available</p>
-{% endif %}
+    {% endif %}
 
     <h3>Ingredients:</h3>
     <p>{{ recipe.ingredients }}</p>
 
     <h3>Steps:</h3>
-    <p>{{ recipe.steps }}</p>
-    <p>Video Path: {{ recipe.video_path }}</p>  <!-- Debugging line -->
-    
+    <p>{{ recipe.instructions }}</p>
+
+    <!-- Debugging: Display Video Path -->
+    <p>Video Path: {{ recipe.video_path }}</p>
+
     {% if recipe.video_path %}
     <video width="600" height="400" controls>
-        <source src="{{ url_for('static', filename=recipe.video_path.replace('static/', '')) }}" type="video/mp4">
+        <source src="{{ url_for('static', filename=recipe.video_path) }}" type="video/mp4">
         Your browser does not support the video tag.
     </video>
-{% endif %}
+    {% else %}
+    <p>No video available</p>
+    {% endif %}
 </div>
-
 {% endblock %}

@@ -8,6 +8,6 @@ with app.app_context():
     if users:
         print("List of registered users:")
         for user in users:
-            print(f"ID: {user.id}, Username: {user.username}, Email: {user.email}")
+            print(f"ID: {user.id}, Username: {user.username}, Email: {user.email}, Pic:{user.profile_photo}")
     else:
         print("No users found.")

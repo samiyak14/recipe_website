@@ -15,35 +15,14 @@ bp = Blueprint('routes', __name__)
 
 @bp.route('/')
 def index():
-    recipes = Recipe.query.filter_by(is_premium=False).all()  # Fetch free recipes
+    recipes = Recipe.query.filter_by(is_premium=False).all() 
     return render_template('index.html', recipes=recipes)
 
 
 @bp.route('/recipes')
 def recipes():
-    recipes = Recipe.query.filter_by(is_premium=False).all()  # Fetch non-premium recipes
+    recipes = Recipe.query.filter_by(is_premium=False).all() 
     return render_template('recipes.html', recipes=recipes)
-@bp.route('/recipe/<int:recipe_id>')
-def view_recipe(recipe_id):
-    recipe = Recipe.query.get_or_404(recipe_id)
-
-    # Process instructions into a list (splitting by newlines and periods)
-    formatted_instructions = []
-    if recipe.instructions:
-        formatted_instructions = [
-            s.strip() for s in re.split(r'[.\n]+', recipe.instructions) if s.strip()
-        ]
-
-    # Process ingredients: Normalize both comma-separated and line-separated input
-    formatted_ingredients = []
-    if recipe.ingredients:
-        formatted_ingredients = [
-            s.strip() for s in re.split(r'[\n,]+', recipe.ingredients) if s.strip()
-        ]
-
-    return render_template('view_recipe.html', recipe=recipe, ingredients=formatted_ingredients, instructions=formatted_instructions)
-
-
 
 
 @bp.route('/about')
@@ -63,7 +42,7 @@ def admin_login():
         
         admin = Admin.query.filter_by(username=username).first()
 
-        if admin and admin.check_password(password):  # Secure password check
+        if admin and admin.check_password(password): 
             login_user(admin)
             flash('Login successful!', 'success')
             return redirect(url_for('routes.admin_dashboard'))
@@ -85,8 +64,9 @@ def admin_required(f):
 @bp.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    recipes = Recipe.query.all()  # Fetch all recipes
+    recipes = Recipe.query.all() 
     return render_template('admin_dashboard.html', recipes=recipes)
+
 @bp.route('/admin/add_recipe', methods=['GET', 'POST'])
 def add_recipe():
     form = RecipeForm()
@@ -95,26 +75,20 @@ def add_recipe():
         image_path = None
         video_path = None
 
-        # Handle Image Upload
+        # Handling the image uploads
         if form.image.data:
             filename = secure_filename(form.image.data.filename)
             image_path = os.path.join(current_app.config['UPLOAD_FOLDER_RECIPES'], filename)
             form.image.data.save(image_path)
             image_path = f"uploads/recipe_media/{filename}"
 
-        # Handle Video Upload
+        # Handling the file uploads
         if form.video.data:
             filename = secure_filename(form.video.data.filename)
             video_path = os.path.join(current_app.config['UPLOAD_FOLDER_RECIPES'], filename)
             form.video.data.save(video_path)
             video_path = f"uploads/recipe_media/{filename}"
 
-        # # Process ingredients: Normalize comma and newline input
-        # raw_ingredients = form.ingredients.data.strip()
-        # ingredients_list = [i.strip() for i in re.split(r'[\n,]+', raw_ingredients) if i.strip()]
-        # formatted_ingredients = "\n".join(ingredients_list)  # Store as newline-separated string
-
-        # Save recipe to database
         new_recipe = Recipe(
             title=form.title.data, 
             description=form.description.data.strip(),
@@ -132,6 +106,7 @@ def add_recipe():
         return redirect(url_for('routes.admin_dashboard'))
 
     return render_template('add_recipe.html', form=form)
+    
 @bp.route('/admin/edit_recipe/<int:recipe_id>', methods=['GET', 'POST'])
 def edit_recipe(recipe_id):
     recipe = Recipe.query.get_or_404(recipe_id)
@@ -146,7 +121,6 @@ def edit_recipe(recipe_id):
 
         recipe.instructions = request.form.get('instructions', recipe.instructions).strip()
 
-        # Handle Image Upload
         image = request.files.get('image')
         if image and image.filename:
             filename = secure_filename(image.filename)
@@ -154,7 +128,6 @@ def edit_recipe(recipe_id):
             image.save(image_path)
             recipe.image_path = f"uploads/recipe_media/{filename}"
 
-        # Handle Video Upload
         video = request.files.get('video')
         if video and video.filename:
             filename = secure_filename(video.filename)
@@ -166,7 +139,6 @@ def edit_recipe(recipe_id):
         flash('Recipe updated successfully!', 'success')
         return redirect(url_for('routes.admin_dashboard'))
 
-    # Convert stored ingredients into a list for checkboxes
     ingredient_list = recipe.ingredients.split("\n") if recipe.ingredients else []
 
     return render_template('edit_recipe.html', recipe=recipe, ingredient_list=ingredient_list)
@@ -182,27 +154,38 @@ def delete_recipe(recipe_id):
     return redirect(url_for('routes.admin_dashboard'))
 
 @bp.route("/admin/logout")
-@login_required  # Ensure only logged-in users can access
+@login_required  
 def admin_logout():
-    logout_user()  # Logs out the current user
+    logout_user()  
     flash("You have been logged out.", "success")
     return redirect(url_for("routes.admin_login"))  # Redirect to login page
+
+@bp.route('/recipe/<int:recipe_id>')
+def view_recipe(recipe_id):
+    recipe = Recipe.query.get_or_404(recipe_id)
+    formatted_instructions = []
+    if recipe.instructions:
+        formatted_instructions = [ s.strip() for s in re.split(r'[.\n]+', recipe.instructions) if s.strip() ]
+    formatted_ingredients = []
+    if recipe.ingredients:
+        formatted_ingredients = [ s.strip() for s in re.split(r'[\n,]+', recipe.ingredients) if s.strip() ]
+
+    return render_template('view_recipe.html', recipe=recipe, ingredients=formatted_ingredients, instructions=formatted_instructions)
+
 
 @bp.route("/user_signup", methods=["GET", "POST"])
 def user_signup():
     form = SignupForm()
     if form.validate_on_submit():
-        # Default Profile Picture
-        profile_photo_filename = "default.jpg"
+        
+        profile_photo_filename = "default.avif"
 
-        # Handle Profile Photo Upload
         if form.profile_photo.data and Config.allowed_file(form.profile_photo.data.filename):
             filename = secure_filename(form.profile_photo.data.filename)
             filepath = os.path.join(current_app.config['UPLOAD_FOLDER_PROFILE'], filename)
             form.profile_photo.data.save(filepath)
             profile_photo_filename = f"uploads/profile_pics/{filename}"  # Store relative path
 
-        # Create new user
         new_user = User(
             name=form.name.data,
             username=form.username.data,
@@ -219,7 +202,6 @@ def user_signup():
     
     return render_template('user_signup.html', form=form)
 
-# User Login
 @bp.route("/login", methods=["GET", "POST"])
 def user_login():
     if request.method == "POST":
@@ -239,7 +221,7 @@ def user_login():
 
 # User Dashboard
 @bp.route("/dashboard")
-@login_required  # Only accessible if logged in
+@login_required  
 def user_dashboard():
     return render_template("user_dashboard.html")
 
@@ -262,7 +244,7 @@ def user_profile():
         current_user.username = form.username.data
         current_user.email = form.email.data
 
-        # Handle Profile Photo Upload
+        
         if form.profile_photo.data and Config.allowed_file(form.profile_photo.data.filename):
             filename = secure_filename(form.profile_photo.data.filename)
             filepath = os.path.join(current_app.config['UPLOAD_FOLDER_PROFILE'], filename)

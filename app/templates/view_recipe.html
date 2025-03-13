@@ -36,14 +36,14 @@
 <!-- 
    Debugging: Display Video Path 
     <p>Video Path: {{ recipe.video_path }}</p> -->
-
+<h3>Video: </h3>
     {% if recipe.video_path %}
     <video width="600" height="400" controls>
         <source src="{{ url_for('static', filename=recipe.video_path) }}" type="video/mp4">
         Your browser does not support the video tag.
     </video>
     {% else %}
-    <p>No video available</p>
+    <p>Sorry! Video recipe is not available yet!</p>
     {% endif %}
 </div>
 {% endblock %}

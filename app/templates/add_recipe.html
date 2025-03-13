@@ -25,7 +25,7 @@
             <textarea name="ingredients" class="form-control" rows="4" required>
                 {{ form.ingredients.data.replace(',', '\n') if form.ingredients.data else '' }}
             </textarea>
-            <small class="form-text text-muted">Enter each ingredient separate them with commas.</small>
+            <small class="form-text text-muted">Enter each ingredient on a new line or separate them with commas.</small>
         </div>
         <div class="mb-3">
             {{ form.instructions.label }}

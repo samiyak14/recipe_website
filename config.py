@@ -12,7 +12,7 @@ class Config:
     UPLOAD_FOLDER_RECIPES = os.path.join(basedir, 'app/static/uploads/recipe_media')
 
     # Allowed file extensions
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov', 'avi','webp'}
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov', 'avi','webp','avif'}
 
     @staticmethod
     def allowed_file(filename):

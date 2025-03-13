@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template,request, redirect, url_for, session, flash,current_app
 from .models import db, Recipe,Admin,User
-from app.forms import EditProfileForm,SignupForm
+from app.forms import EditProfileForm,SignupForm,RecipeForm
 from werkzeug.security import check_password_hash
 from functools import wraps
 from flask_login import logout_user
@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 from flask_login import login_user, login_required,current_user
 import os
 from config import Config
+import re
 
 
 bp = Blueprint('routes', __name__)
@@ -22,11 +23,28 @@ def index():
 def recipes():
     recipes = Recipe.query.filter_by(is_premium=False).all()  # Fetch non-premium recipes
     return render_template('recipes.html', recipes=recipes)
-
 @bp.route('/recipe/<int:recipe_id>')
 def view_recipe(recipe_id):
-    recipe = Recipe.query.get_or_404(recipe_id)  # Get recipe or show 404 error
-    return render_template('view_recipe.html', recipe=recipe)
+    recipe = Recipe.query.get_or_404(recipe_id)
+
+    # Process instructions into a list (splitting by newlines and periods)
+    formatted_instructions = []
+    if recipe.instructions:
+        formatted_instructions = [
+            s.strip() for s in re.split(r'[.\n]+', recipe.instructions) if s.strip()
+        ]
+
+    # Process ingredients: Normalize both comma-separated and line-separated input
+    formatted_ingredients = []
+    if recipe.ingredients:
+        formatted_ingredients = [
+            s.strip() for s in re.split(r'[\n,]+', recipe.ingredients) if s.strip()
+        ]
+
+    return render_template('view_recipe.html', recipe=recipe, ingredients=formatted_ingredients, instructions=formatted_instructions)
+
+
+
 
 @bp.route('/about')
 def about():
@@ -69,40 +87,40 @@ def admin_required(f):
 def admin_dashboard():
     recipes = Recipe.query.all()  # Fetch all recipes
     return render_template('admin_dashboard.html', recipes=recipes)
-
 @bp.route('/admin/add_recipe', methods=['GET', 'POST'])
 def add_recipe():
-    if request.method == 'POST':
-        title = request.form.get('title')
-        tags = request.form.get('tags')
-        ingredients = request.form.get('ingredients')
-        instructions = request.form.get('instructions')
+    form = RecipeForm()
 
+    if form.validate_on_submit():
         image_path = None
         video_path = None
 
         # Handle Image Upload
-        image = request.files.get('image')
-        if image and Config.allowed_file(image.filename):
-            filename = secure_filename(image.filename)
+        if form.image.data:
+            filename = secure_filename(form.image.data.filename)
             image_path = os.path.join(current_app.config['UPLOAD_FOLDER_RECIPES'], filename)
-            image.save(image_path)
-            image_path = f"uploads/recipe_media/{filename}"  # Store relative path
+            form.image.data.save(image_path)
+            image_path = f"uploads/recipe_media/{filename}"
 
         # Handle Video Upload
-        video = request.files.get('video')
-        if video and Config.allowed_file(video.filename):
-            filename = secure_filename(video.filename)
+        if form.video.data:
+            filename = secure_filename(form.video.data.filename)
             video_path = os.path.join(current_app.config['UPLOAD_FOLDER_RECIPES'], filename)
-            video.save(video_path)
+            form.video.data.save(video_path)
             video_path = f"uploads/recipe_media/{filename}"
+
+        # # Process ingredients: Normalize comma and newline input
+        # raw_ingredients = form.ingredients.data.strip()
+        # ingredients_list = [i.strip() for i in re.split(r'[\n,]+', raw_ingredients) if i.strip()]
+        # formatted_ingredients = "\n".join(ingredients_list)  # Store as newline-separated string
 
         # Save recipe to database
         new_recipe = Recipe(
-            title=title, 
-            tags=tags, 
-            ingredients=ingredients, 
-            instructions=instructions,
+            title=form.title.data, 
+            description=form.description.data.strip(),
+            tags=form.tags.data.strip(),
+            ingredients=form.ingredients.data.strip(),  
+            instructions=form.instructions.data.strip(),
             image_path=image_path,
             video_path=video_path
         )
@@ -113,38 +131,45 @@ def add_recipe():
         flash('Recipe added successfully!', 'success')
         return redirect(url_for('routes.admin_dashboard'))
 
-    return render_template('add_recipe.html')
+    return render_template('add_recipe.html', form=form)
 @bp.route('/admin/edit_recipe/<int:recipe_id>', methods=['GET', 'POST'])
 def edit_recipe(recipe_id):
     recipe = Recipe.query.get_or_404(recipe_id)
 
     if request.method == 'POST':
-        recipe.title = request.form.get('title')
-        recipe.ingredients = request.form.get('ingredients')
-        recipe.instructions = request.form.get('instructions')
-        recipe.tags = request.form.get('tags', '')
+        recipe.title = request.form.get('title', recipe.title).strip()
+        recipe.description = request.form.get('description', recipe.description).strip()
+        recipe.tags = request.form.get('tags', recipe.tags).strip()
+
+        
+        recipe.ingredients = request.form.get('ingredients', recipe.ingredients).strip()
+
+        recipe.instructions = request.form.get('instructions', recipe.instructions).strip()
 
         # Handle Image Upload
         image = request.files.get('image')
-        if image and Config.allowed_file(image.filename):
+        if image and image.filename:
             filename = secure_filename(image.filename)
             image_path = os.path.join(current_app.config['UPLOAD_FOLDER_RECIPES'], filename)
             image.save(image_path)
-            recipe.image_path = f"uploads/recipe_media/{filename}"  # Update only if a new file is uploaded
+            recipe.image_path = f"uploads/recipe_media/{filename}"
 
         # Handle Video Upload
         video = request.files.get('video')
-        if video and Config.allowed_file(video.filename):
+        if video and video.filename:
             filename = secure_filename(video.filename)
             video_path = os.path.join(current_app.config['UPLOAD_FOLDER_RECIPES'], filename)
             video.save(video_path)
-            recipe.video_path = f"uploads/recipe_media/{filename}"  # Update only if a new file is uploaded
+            recipe.video_path = f"uploads/recipe_media/{filename}"
 
         db.session.commit()
         flash('Recipe updated successfully!', 'success')
         return redirect(url_for('routes.admin_dashboard'))
 
-    return render_template('edit_recipe.html', recipe=recipe)
+    # Convert stored ingredients into a list for checkboxes
+    ingredient_list = recipe.ingredients.split("\n") if recipe.ingredients else []
+
+    return render_template('edit_recipe.html', recipe=recipe, ingredient_list=ingredient_list)
 
 
 @bp.route('/admin/delete_recipe/<int:recipe_id>', methods=['POST'])

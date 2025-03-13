@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-1">
     <h1 class="text-center fw-bold text-primary">Delicious Recipes</h1>
     <p class="text-center text-muted">Explore and enjoy mouthwatering recipes!</p>
 
@@ -17,12 +17,12 @@
                 <img src="{{ url_for('static', filename='images/placeholder.jpg') }}" 
                      class="card-img-top" alt="No Image Available">
                 {% endif %}
-                
                 <div class="card-body text-center">
                     <h5 class="card-title fw-bold">{{ recipe.title }}</h5>
-                    <p class="card-text text-muted">
-                        {{ recipe.ingredients[:100] }}{% if recipe.ingredients|length > 100 %}...{% endif %}
+                    <p class="text-muted">
+                        {{ (recipe.description or '')[:100] }}{% if (recipe.description or '')|length > 100 %}...{% endif %}
                     </p>
+                    
                     <a href="{{ url_for('routes.view_recipe', recipe_id=recipe.id) }}" class="btn btn-primary">
                         View Recipe
                     </a>

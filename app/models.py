@@ -11,6 +11,7 @@ class Recipe(db.Model):
     tags = db.Column(db.String(255))
     ingredients = db.Column(db.Text, nullable=False)
     instructions = db.Column(db.Text, nullable=True)
+    description = db.Column(db.String(500), nullable=True)
     image_path = db.Column(db.String(255))  # Stores relative path
     video_path = db.Column(db.String(255))  # Stores relative path
     is_premium = db.Column(db.Boolean, default=False)  # New column

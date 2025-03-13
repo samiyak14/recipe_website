@@ -3,6 +3,6 @@ from sqlalchemy import text
 app = create_app()  # Create Flask app instance
 
 with app.app_context():  # Push the application context
-    result = db.session.execute(text("PRAGMA table_info(User)")).fetchall()
+    result = db.session.execute(text("PRAGMA table_info(Admin)")).fetchall()
     for row in result:
         print(row)

@@ -4,25 +4,38 @@
 <div class="container">
     <h1>{{ recipe.title }}</h1>
 
-    <!-- Debugging: Display Image Path -->
-    <p>Image Path: {{ recipe.image_path }}</p>
+    <!-- Debugging: Display Image Path
+    <p>Image Path: {{ recipe.image_path }}</p> -->
 
     {% if recipe.image_path %}
     <img src="{{ url_for('static', filename=recipe.image_path) }}" 
-         alt="{{ recipe.title }}" 
-         class="img-fluid">
+    alt="{{ recipe.title }}" 
+    class="img-fluid recipe-image">
+
     {% else %}
     <p>No image available</p>
     {% endif %}
+   <h3>Ingredients:</h3>
+<form>
+    {% for ingredient in ingredients %}
+        <div class="list-group-item">
+            <input type="checkbox" id="{{ ingredient }}" name="ingredients">
+            <label for="{{ ingredient }}">{{ ingredient }}</label>
+        </div>
+    {% endfor %}
+</form>
 
-    <h3>Ingredients:</h3>
-    <p>{{ recipe.ingredients }}</p>
 
-    <h3>Steps:</h3>
-    <p>{{ recipe.instructions }}</p>
+<h3>Steps:</h3>
+{% for step in instructions %}
+    <p>{{ step }}.</p>
+{% endfor %}
 
-    <!-- Debugging: Display Video Path -->
-    <p>Video Path: {{ recipe.video_path }}</p>
+
+
+<!-- 
+   Debugging: Display Video Path 
+    <p>Video Path: {{ recipe.video_path }}</p> -->
 
     {% if recipe.video_path %}
     <video width="600" height="400" controls>

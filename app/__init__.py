@@ -18,12 +18,11 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
 
-    # Ensure upload folders exist
+
     ensure_upload_folders(app)
 
     @login_manager.user_loader

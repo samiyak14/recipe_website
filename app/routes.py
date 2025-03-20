@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template,request, redirect, url_for, session, flash,current_app
-from .models import db, Recipe,Admin,User
+from flask import Blueprint, render_template,request, redirect, url_for, session, flash,current_app, jsonify
+from .models import db, Recipe,Admin,User,Like, Rating, Comment
 from app.forms import EditProfileForm,SignupForm,RecipeForm
 from werkzeug.security import check_password_hash
 from functools import wraps
@@ -153,12 +153,12 @@ def delete_recipe(recipe_id):
     flash('Recipe deleted successfully!', 'danger')
     return redirect(url_for('routes.admin_dashboard'))
 
-@bp.route("/admin/logout")
-@login_required  
-def admin_logout():
-    logout_user()  
-    flash("You have been logged out.", "success")
-    return redirect(url_for("routes.admin_login"))  # Redirect to login page
+# @bp.route("/admin/logout")
+# @login_required  
+# def admin_logout():
+#     logout_user()  
+#     flash("You have been logged out.", "success")
+#     return redirect(url_for("routes.user_login"))  # Redirect to login page
 
 @bp.route('/recipe/<int:recipe_id>')
 def view_recipe(recipe_id):
@@ -170,7 +170,12 @@ def view_recipe(recipe_id):
     if recipe.ingredients:
         formatted_ingredients = [ s.strip() for s in re.split(r'[\n,]+', recipe.ingredients) if s.strip() ]
 
-    return render_template('view_recipe.html', recipe=recipe, ingredients=formatted_ingredients, instructions=formatted_instructions)
+    user_liked = False
+    user_rating = None
+    if current_user.is_authenticated:
+        user_liked = Like.query.filter_by(user_id=current_user.id, recipe_id=recipe_id).first() is not None
+        user_rating = Rating.query.filter_by(user_id=current_user.id, recipe_id=recipe_id).first()
+    return render_template('view_recipe.html', recipe=recipe, ingredients=formatted_ingredients, instructions=formatted_instructions,   user_liked=user_liked, user_rating=user_rating.rating if user_rating else 0)
 
 
 @bp.route("/user_signup", methods=["GET", "POST"])
@@ -223,7 +228,8 @@ def user_login():
 @bp.route("/dashboard")
 @login_required  
 def user_dashboard():
-    return render_template("user_dashboard.html")
+    liked_recipes = current_user.liked_recipes  # Get all liked recipes for the user
+    return render_template('user_dashboard.html', liked_recipes=liked_recipes)
 
 # User Logout
 @bp.route("/logout")
@@ -256,3 +262,72 @@ def user_profile():
         return redirect(url_for('routes.user_profile'))
 
     return render_template('user_profile.html', form=form)
+@bp.route('/search')
+def search():
+    query = request.args.get('q', '').strip()  # Get user input
+    if not query:
+        return render_template('search_results.html', recipes=[])
+
+    # Search for recipes where the title, tags, or description contain the query
+    results = Recipe.query.filter(
+        (Recipe.title.ilike(f"%{query}%")) |
+        (Recipe.tags.ilike(f"%{query}%")) |
+        (Recipe.description.ilike(f"%{query}%"))
+    ).all()
+
+    return render_template('search_results.html', recipes=results, query=query)
+
+
+@bp.route('/like/<int:recipe_id>', methods=['POST'])
+@login_required
+def like_recipe(recipe_id):
+    recipe = Recipe.query.get_or_404(recipe_id)
+    existing_like = Like.query.filter_by(user_id=current_user.id, recipe_id=recipe_id).first()
+    
+    if existing_like:
+        db.session.delete(existing_like)
+        liked = False  # Unlike
+    else:
+        like = Like(user_id=current_user.id, recipe_id=recipe_id)
+        db.session.add(like)
+        liked = True  # Like
+    
+    db.session.commit()
+    
+    return jsonify({
+        "liked": liked,
+        "like_count": Like.query.filter_by(recipe_id=recipe_id).count()  # Updated like count
+    })
+
+
+@bp.route('/rate_recipe/<int:recipe_id>', methods=['POST'])
+@login_required
+def rate_recipe(recipe_id):
+    recipe = Recipe.query.get_or_404(recipe_id)
+    data = request.get_json()
+    rating_value = int(data.get("rating"))
+
+    # Check if the user already rated the recipe
+    existing_rating = Rating.query.filter_by(user_id=current_user.id, recipe_id=recipe_id).first()
+
+    if existing_rating:
+        existing_rating.rating = rating_value  # Update existing rating
+    else:
+        new_rating = Rating(user_id=current_user.id, recipe_id=recipe_id, rating=rating_value)
+        db.session.add(new_rating)
+
+    db.session.commit()
+
+    return jsonify({"success": True, "rating": rating_value})
+
+    
+@bp.route('/comment/<int:recipe_id>', methods=['POST'])
+@login_required
+def add_comment(recipe_id):
+    content = request.form.get('content', '').strip()
+    if content:
+        new_comment = Comment(user_id=current_user.id, recipe_id=recipe_id, content=content)
+        db.session.add(new_comment)
+        db.session.commit()
+    
+    return redirect(url_for('routes.view_recipe', recipe_id=recipe_id))

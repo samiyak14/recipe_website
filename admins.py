@@ -10,4 +10,4 @@ with app.app_context():
         for recipe in recipes:  # Changed variable name to match model
             print(f"ID={recipe.id}, Username={recipe.username}")
     else:
-        print("No recipes found.")
+        print("No Admins found.")

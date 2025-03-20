@@ -26,3 +26,23 @@ border-radius: 8px;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
 }
+
+#like-btn {
+    border: none;
+    background: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.rating i {
+    font-size: 24px;
+    cursor: pointer;
+    color: #ddd;
+    transition: color 0.3s;
+}
+.rating i.selected {
+    color: gold;
+}
+.rating i:hover {
+    color: gold;
+}

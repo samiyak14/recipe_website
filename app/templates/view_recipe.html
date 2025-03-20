@@ -4,39 +4,31 @@
 <div class="container">
     <h1>{{ recipe.title }}</h1>
 
-    <!-- Debugging: Display Image Path
-    <p>Image Path: {{ recipe.image_path }}</p> -->
-
     {% if recipe.image_path %}
     <img src="{{ url_for('static', filename=recipe.image_path) }}" 
-    alt="{{ recipe.title }}" 
-    class="img-fluid recipe-image">
-
+         alt="{{ recipe.title }}" class="img-fluid recipe-image">
     {% else %}
     <p>No image available</p>
     {% endif %}
-   <h3>Ingredients:</h3>
-<form>
-    {% for ingredient in ingredients %}
-        <div class="list-group-item">
-            <input type="checkbox" id="{{ ingredient }}" name="ingredients">
-            <label for="{{ ingredient }}">{{ ingredient }}</label>
-        </div>
+
+    <h3>Ingredients:</h3>
+    <div> 
+        <form>
+            {% for ingredient in ingredients %}
+                <div class="list-group-item">
+                    <input type="checkbox" id="{{ ingredient }}" name="ingredients">
+                    <label for="{{ ingredient }}">{{ ingredient }}</label>
+                </div>
+            {% endfor %}
+        </form>
+    </div>
+
+    <h3>Steps:</h3>
+    {% for step in instructions %}
+        <p>{{ step }}.</p>
     {% endfor %}
-</form>
 
-
-<h3>Steps:</h3>
-{% for step in instructions %}
-    <p>{{ step }}.</p>
-{% endfor %}
-
-
-
-<!-- 
-   Debugging: Display Video Path 
-    <p>Video Path: {{ recipe.video_path }}</p> -->
-<h3>Video: </h3>
+    <h3>Video: </h3>
     {% if recipe.video_path %}
     <video width="600" height="400" controls>
         <source src="{{ url_for('static', filename=recipe.video_path) }}" type="video/mp4">
@@ -46,4 +38,132 @@
     <p>Sorry! Video recipe is not available yet!</p>
     {% endif %}
 </div>
+
+<!-- Like Button -->
+{% if current_user.is_authenticated %}
+<form id="like-form" data-url="{{ url_for('routes.like_recipe', recipe_id=recipe.id) }}" class="d-inline">
+    <button type="button" id="like-btn" class="btn">
+        <i class="fa fa-heart {% if user_liked %} text-danger {% else %} text-secondary {% endif %}" id="like-icon"></i>
+    </button>
+    <span id="like-count">{{ recipe.likes|length }} {{ "Like" if recipe.likes|length == 1 else "Likes" }}</span>
+</form>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let likeForm = document.getElementById("like-form");
+        let likeButton = document.getElementById("like-btn");
+        let likeIcon = document.getElementById("like-icon");
+        let likeCount = document.getElementById("like-count");
+
+        likeButton.addEventListener("click", function () {
+            fetch(likeForm.getAttribute("data-url"), {
+                method: "POST",
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Toggle heart color based on whether user liked/unliked
+                if (data.liked) {
+                    likeIcon.classList.remove("text-secondary");
+                    likeIcon.classList.add("text-danger"); // Heart turns red
+                } else {
+                    likeIcon.classList.remove("text-danger");
+                    likeIcon.classList.add("text-secondary"); // Heart turns gray
+                }
+
+                // Update like count with proper singular/plural formatting
+                likeCount.textContent = data.like_count + (data.like_count === 1 ? " Like" : " Likes");
+            })
+            .catch(error => console.error("Error:", error));
+        });
+    });
+</script>
+
+<!-- Rating System -->
+
+<div class="rating" id="rating-container" data-url="{{ url_for('routes.rate_recipe', recipe_id=recipe.id) }}">
+    {% for i in range(1, 6) %}
+        <i class="fa fa-star {% if user_rating and i <= user_rating %}selected{% endif %}" 
+           data-value="{{ i }}"></i>
+    {% endfor %}
+</div>
+<span id="rating-feedback" class="text-success"></span>
+
+
+<!-- JavaScript for AJAX Rating Submission -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let stars = document.querySelectorAll('.rating i');
+        let ratingContainer = document.getElementById('rating-container');
+        let feedback = document.getElementById('rating-feedback');
+
+        stars.forEach(star => {
+            star.addEventListener('click', function () {
+                let value = this.getAttribute('data-value');
+
+                // Send rating via AJAX
+                fetch(ratingContainer.getAttribute('data-url'), {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    body: JSON.stringify({ rating: value })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Highlight selected stars
+                    stars.forEach(s => s.classList.remove('selected'));
+                    for (let j = 0; j < value; j++) {
+                        stars[j].classList.add('selected');
+                    }
+                    
+                    // Show feedback
+                    feedback.textContent = "Rating submitted!";
+                    setTimeout(() => feedback.textContent = "", 2000); // Hide after 2 seconds
+                })
+                .catch(error => console.error("Error:", error));
+            });
+        });
+    });
+</script>
+
+
+<!-- Display Average Rating -->
+<div class="mt-2">
+    <span class="text-warning">
+        {% for i in range(1, 6) %}
+            {% if i <= recipe.average_rating %}
+                ★
+            {% else %}
+                ☆
+            {% endif %}
+        {% endfor %}
+        ({{ recipe.average_rating|round(1) }})
+    </span>
+</div>
+{% else %}
+<p><a href="{{ url_for('routes.user_login') }}" class="text-primary">Log in to like, rate and comment this recipe!</a></p>
+{% endif %}
+<!-- Comments Section -->
+<h3>Comments:</h3>
+<ul class="list-group">
+    {% for comment in recipe.comments %}
+        <li class="list-group-item">
+            <strong>{{ comment.user.username }}</strong>: {{ comment.content }}
+        </li>
+    {% endfor %}
+</ul>
+
+<!-- Add Comment -->
+<form action="{{ url_for('routes.add_comment', recipe_id=recipe.id) }}" method="POST">
+    <textarea name="content" class="form-control" placeholder="Add a comment..." required></textarea>
+    <button type="submit" class="btn btn-success mt-2">Post Comment</button>
+</form>
+
+
+
+
+
 {% endblock %}

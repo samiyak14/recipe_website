@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Search Results for "{{ query }}"</h2>
+    
+    {% if recipes %}
+        <div class="row">
+            {% for recipe in recipes %}
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    {% if recipe.image_path %}
+                        <img src="{{ url_for('static', filename=recipe.image_path) }}" class="card-img-top" alt="{{ recipe.title }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ recipe.title }}</h5>
+                        <p class="card-text text-muted">{{ recipe.tags or "No Tags" }}</p>
+                        <a href="{{ url_for('routes.view_recipe', recipe_id=recipe.id) }}" class="btn btn-primary">View Recipe</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">No recipes found. Try a different search!</p>
+    {% endif %}
+</div>
+{% endblock %}

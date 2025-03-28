@@ -1,20 +1,24 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Welcome, {{ current_user.name }}</h2>
+<div class="container py-1">
 
-<!-- {% if current_user.is_premium %}
-    <p class="text-success">You are a Premium User! Enjoy exclusive recipes.</p>
-{% else %}
-    <p class="text-danger">Upgrade to premium for exclusive content.</p>
-{% endif %} -->
+    <!-- Category Title -->
+    <h1 class="text-center fw-bold page-title">{{ cuisine }} Recipes</h1>
+    <p class="text-center text-muted">Explore and enjoy delicious {{ cuisine }} recipes!</p>
 
-<h3 class="mt-3">Enjoy your favourite recipes!</h3>
+    <!-- 🔍 Search Form -->
+    <div class="container py-4">
+        <form action="{{ url_for('routes.search') }}" method="GET" class="d-flex justify-content-center">
+            <input type="text" name="q" class="form-control w-50 me-2" placeholder="Search recipes..." required>
+            <button type="submit" class="btn btn-primary">🔍 Search</button>
+        </form>
+    </div>
 
-<!-- Recipe Grid -->
-<div class="row gx-4 gy-5">
-    {% for recipe in liked_recipes %}
-        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+    <!-- 🍽️ Recipes in Category -->
+    <div class="row gx-4 gy-5">
+        {% for recipe in recipes %}
+        <div class="col-md-4 col-sm-6">
 
             <!-- Flip Card Container -->
             <div class="flip-card" onclick="flipCard(this)">
@@ -55,7 +59,7 @@
 
                                 <!-- View Recipe Button -->
                                 <div class="mt-auto">
-                                    <a href="{{ url_for('routes.view_recipe', recipe_id=recipe.id) }}" class="btn btn-primary btn-sm" onclick="event.stopPropagation();">
+                                    <a href="{{ url_for('routes.view_recipe', recipe_id=recipe.id) }}" class="btn btn-primary" onclick="event.stopPropagation();">
                                         View Recipe
                                     </a>
                                 </div>
@@ -75,7 +79,9 @@
             </div>
 
         </div>
-    {% endfor %}
+        {% endfor %}
+    </div>
+
 </div>
 
 <!-- 🔄 JavaScript for Flip Action -->

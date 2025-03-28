@@ -25,4 +25,9 @@
         <p class="text-muted">No recipes found. Try a different search!</p>
     {% endif %}
 </div>
+<!-- Link to go bacl to previous page -->
+<div class="mt-10">
+    <a href="{{ url_for('routes.recipes') }}" class="btn"><<<Back to Recipes</a>
+</div>
+
 {% endblock %}

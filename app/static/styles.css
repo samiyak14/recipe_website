@@ -1,32 +1,83 @@
-.recipe-card { margin-bottom: 20px; }
-.profile-photo {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-.recipe-image {
-max-width: 300px;  
-height: auto;
-display: block; 
-border-radius: 8px;  
+/* 🌿 Global Color Variables */
+:root {
+    --bg-light: #EEE2B5;          /* Soft beige background */
+    --bg-card: #F8F6F2;          /* Light cream for cards */
+    --text-dark: #333333;        /* Rich dark grey for text */
+    --accent-green: #6B8E23;     /* Olive green for primary accents */
+    --hover-green: #4A5D23;      /* Deep green for hover states */
+    --border-light: #EAEAEA;     /* Light border for separation */
 }
 
-.list-group-item {
-    display: flex;
-    align-items: center;
+/* 🌟 General Styling */
+body {
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.recipe-container {
+    max-width: 800px;
+    margin: auto;
+    background: #FAF9F6; /* Soft beige */
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* 📝 Title */
+.recipe-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #4A5D23; /* Olive Green */
+    margin-bottom: 20px;
+}
+/* 📜 Recipe Sections */
+.recipe-section {
+    margin-top: 30px;
+}
+
+.recipe-section h3 {
+    font-family: 'Playfair Display', serif;
+    font-weight: bold;
+    color: #6B8E23;
+    border-bottom: 2px solid #6B8E23;
+    padding-bottom: 5px;
+}
+
+/* ✅ Ingredients List */
+.ingredients-list {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* 📋 Steps */
+.recipe-steps {
     font-size: 18px;
-    padding: 10px;
+    line-height: 1.6;
+    padding-left: 20px;
 }
 
-.card-img-top {
-    width: 100%;           /* Ensures image fills the card width */
-    height: 400px;         /* Set a fixed height */
-    object-fit: cover;     /* Crop and scale image to fit */
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
+/* 🎥 Video Styling */
+.recipe-video {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
 }
 
+.recipe-image {
+    width: 100%;               /* Ensure it adapts to parent container */
+    max-width: 600px;          /* Maintain a max width */
+    height: auto;              /* Keep aspect ratio */
+    object-fit: cover;         /* Ensure the image is properly cropped */
+    border-radius: 12px;       /* Rounded corners */
+    display: block;            /* Avoid inline display issues */
+    margin: 20px auto;         /* Center the image */
+}
+
+/* ❤️ Like Button - Fixed Red Color */
 #like-btn {
     border: none;
     background: none;
@@ -34,15 +85,248 @@ border-radius: 8px;
     cursor: pointer;
 }
 
+/* Ensure liked hearts remain red */
+#like-btn .liked {
+    color: red !important; /* Fixed red heart */
+}
+
+#like-btn .unliked {
+    color: #ccc !important; /* Fixed gray heart */
+}
+
+/* ⭐ Rating System - Fixed Gold Color */
 .rating i {
     font-size: 24px;
     cursor: pointer;
-    color: #ddd;
-    transition: color 0.3s;
+    transition: color 0.3s ease;
 }
+
+/* Ensure selected stars remain gold */
 .rating i.selected {
-    color: gold;
+    color: gold !important; /* Fixed gold for selected stars */
 }
+
+/* Ensure hover stars stay gold */
 .rating i:hover {
-    color: gold;
+    color: gold !important; /* Fixed gold on hover */
 }
+
+/* 🌿 Navbar Customization */
+.navbar {
+    background-color: var(--bg-light);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.navbar-brand {
+    color: var(--accent-green);
+}
+
+.navbar-brand:hover {
+    color: var(--hover-green);
+}
+
+/* Button Customization */
+.btn-primary {
+    background-color: var(--accent-green);
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--hover-green);
+}
+
+
+.text-primary {
+    color: #6B8E23 !important; /* Olive Green or use a custom color */
+    font-family: 'Playfair Display', serif;
+
+}
+
+
+/* Card Styling */
+.recipe-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.recipe-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Image Styling */
+.card-img-top {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+   /* Flip Card Container */
+   .flip-card {
+    perspective: 1000px; /* Enables 3D effect */
+    cursor: pointer;
+}
+
+.flip-card-inner {
+    position: relative;
+    width: 100%;
+    min-height: 600px; /* Ensure uniform card height */
+    transform-style: preserve-3d;
+    transition: transform 0.6s ease;
+}
+
+/* Flip Effect */
+.flip-card.flipped .flip-card-inner {
+    transform: rotateY(180deg);
+}
+
+/* Front and Back Styling */
+.flip-card-front,
+.flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    backface-visibility: hidden; /* Hide the back side by default */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Front Side */
+.flip-card-front {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-card);
+}
+
+/* Ensure uniform card height */
+.card-fixed-height {
+    min-height: 100%;
+}
+
+/* Image Styling (Fixed Height for Consistency) */
+.flip-card-front .card-img-top {
+    width: 100%;
+    height: 400px; /* Fixed image height */
+    object-fit: cover; /* Ensure proper cropping */
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    margin-bottom: 20px; /* Added margin below image */
+}
+
+/* Ensure the Card Body Uses Flex Layout */
+.card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* Allows body to grow dynamically */
+}
+
+/* Back Side (Stylish Description) */
+.flip-card-back {
+    background: var(--accent-green);
+    transform: rotateY(180deg);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+}
+
+/* Stylish Font for Description */
+.description-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: white;
+    line-height: 1.8;
+}
+
+
+
+/* Profile Photo */
+.profile-photo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Links (for "See All" or others) */
+.link-accent {
+    color: var(--accent-green);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.link-accent:hover {
+    text-decoration: underline;
+    color: var(--hover-green);
+}
+
+/* Form Input Customization */
+input, textarea {
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    padding: 10px;
+}
+
+/* Footer Styling */
+footer {
+    background: var(--bg-light);
+    text-align: center;
+    padding: 20px 0;
+    border-top: 1px solid var(--border-light);
+}
+
+ /* Hero Section Styling */
+ .hero-section {
+    background: linear-gradient(135deg, var(--bg-light), #ECEBE4);
+    color: var(--text-dark);
+    border-radius: 20px;
+}
+
+/* Category Styling */
+.category-section {
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 20px;
+}
+
+.category-title {
+    font-weight: bold;
+    font-family: 'Playfair Display', serif;
+    color: var(--accent);
+}
+
+/* Recipe Card Styling */
+.recipe-card {
+    background: white;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.recipe-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Button Styling (Olive Green Accent) */
+.btn-accent {
+    background-color: var(--accent);
+    color: white;
+    border: none;
+}
+
+.btn-accent:hover {
+    background-color: #556B2F; /* Darker olive green */
+}
+
+.search-input {
+    border-radius: 30px;
+    padding: 10px 20px;
+   border: 1px solid var(--border-light);
+    }
+
+

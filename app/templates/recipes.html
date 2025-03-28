@@ -2,67 +2,111 @@
 
 {% block content %}
 <div class="container py-1">
-    <h1 class="text-center fw-bold text-primary">Delicious Recipes</h1>
+
+    <!-- Page Title -->
+    <h1 class="text-center fw-bold page-title">Delicious Recipes</h1>
     <p class="text-center text-muted">Explore and enjoy mouthwatering recipes!</p>
+
+    <!-- 🔍 Search Form -->
     <div class="container py-4">
         <form action="{{ url_for('routes.search') }}" method="GET" class="d-flex justify-content-center">
             <input type="text" name="q" class="form-control w-50 me-2" placeholder="Search recipes..." required>
             <button type="submit" class="btn btn-primary">🔍 Search</button>
         </form>
-    
-        <script>
-            function clearSearchInput() {
-                document.getElementById("searchInput").value = "";
-            }
-            window.onload = function() {
-            if (window.location.pathname === "{{ url_for('routes.index') }}") {
-                history.replaceState({}, document.title, "{{ url_for('routes.index') }}");
-            }
-            };
-        </script>
     </div>
-    
-    <div class="row">
-        {% for recipe in recipes %}
-        <div class="col-md-4 col-sm-6 mb-4">
-            <div class="card shadow-sm border-0">
-                <!-- Display Recipe Image or Placeholder -->
-                {% if recipe.image_path %}
-                <img src="{{ url_for('static', filename=recipe.image_path) }}" 
-                     class="card-img-top" alt="{{ recipe.title }}">
-                {% else %}
-                <img src="{{ url_for('static', filename='images/placeholder.jpg') }}" 
-                     class="card-img-top" alt="No Image Available">
-                {% endif %}
-                <div class="card-body text-center">
-                    <h5 class="card-title fw-bold">{{ recipe.title }}</h5>
-                    <p class="text-muted">
-                        {{ (recipe.description or '')[:100] }}{% if (recipe.description or '')|length > 100 %}...{% endif %}
-                    </p>
-                    
-                    <a href="{{ url_for('routes.view_recipe', recipe_id=recipe.id) }}" class="btn btn-primary">
-                        View Recipe
-                    </a>
 
-                    <!-- Likes & Ratings Section -->
-                <div class="mt-2">
-                    <span class="text-warning">
-                        {% for i in range(1, 6) %}
-                            {% if i <= recipe.average_rating %}
-                                ★
+    <!-- Recipe Grid -->
+<div class="row gx-4 gy-5">
+    {% for recipe in recipes %}
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+
+            <!-- Flip Card Container -->
+            <div class="flip-card" onclick="flipCard(this)">
+                <div class="flip-card-inner">
+
+                    <!-- Front Side (Image, Title, Ratings, Likes) -->
+                    <div class="flip-card-front">
+                        <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column card-fixed-height">
+
+                            <!-- Image -->
+                            {% if recipe.image_path %}
+                                <img src="{{ url_for('static', filename=recipe.image_path) }}" class="card-img-top" alt="{{ recipe.title }}">
                             {% else %}
-                                ☆
+                                <img src="{{ url_for('static', filename='images/placeholder.jpg') }}" class="card-img-top" alt="No Image Available">
                             {% endif %}
-                        {% endfor %}
-                        ({{ recipe.average_rating }})
-                    </span>
 
-                    <span class="text-danger ms-3">❤️ {{ recipe.like_count }}</span>
-                </div>
+                            <!-- Card Content -->
+                            <div class="card-body text-center d-flex flex-column flex-grow-1">
+
+                                <!-- Title -->
+                                <h5 class="fw-bold">{{ recipe.title }}</h5>
+
+                                <!-- Likes & Ratings -->
+                                <div class="mt-2">
+                                    <span class="text-warning">
+                                        {% for i in range(1, 6) %}
+                                            {% if i <= recipe.average_rating %}
+                                                ★
+                                            {% else %}
+                                                ☆
+                                            {% endif %}
+                                        {% endfor %}
+                                        ({{ recipe.average_rating or 0 }})
+                                    </span>
+
+                                    <span class="text-danger ms-3">❤️ {{ recipe.like_count }}</span>
+                                </div>
+
+                                <!-- View Recipe Button -->
+                                <div class="mt-auto">
+                                    <a href="{{ url_for('routes.view_recipe', recipe_id=recipe.id) }}" class="btn btn-primary btn-sm" onclick="event.stopPropagation();">
+                                        View Recipe
+                                    </a>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Back Side (Description) -->
+                    <div class="flip-card-back">
+                        <div class="card-body d-flex align-items-center justify-content-center">
+                            <p class="description-text">{{ recipe.description or 'No description available.' }}</p>
+                        </div>
+                    </div>
+
                 </div>
             </div>
+
         </div>
-        {% endfor %}
-    </div>
+    {% endfor %}
 </div>
+
+
+<!-- 🔄 JavaScript for Flip Action -->
+<script>
+    // Handle card flip on click
+    function flipCard(card) {
+        card.classList.toggle('flipped');
+
+        // Auto flip back after 15 seconds
+        if (card.classList.contains('flipped')) {
+            setTimeout(() => {
+                card.classList.remove('flipped');
+            }, 15000); // 15000 ms = 15 seconds
+        }
+    }
+
+    // Automatically flip back after 15 seconds if flipped by default
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".flip-card").forEach((card) => {
+            if (card.classList.contains("flipped")) {
+                setTimeout(() => {
+                    card.classList.remove("flipped");
+                }, 15000);
+            }
+        });
+    });
+</script>
+
 {% endblock %}

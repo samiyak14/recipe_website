@@ -1,52 +1,122 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <h1>{{ recipe.title }}</h1>
+<div class="container recipe-container py-5">
 
+    <!-- Recipe Title -->
+    <h1 class="recipe-title text-center">{{ recipe.title }}</h1>
+
+    <!-- Recipe Image -->
     {% if recipe.image_path %}
-    <img src="{{ url_for('static', filename=recipe.image_path) }}" 
-         alt="{{ recipe.title }}" class="img-fluid recipe-image">
+        <div class="text-center">
+            <img class="recipe-image shadow-lg" src="{{ url_for('static', filename=recipe.image_path) }}" 
+                 alt="{{ recipe.title }}">
+        </div>
     {% else %}
-    <p>No image available</p>
+        <p class="text-center text-muted">No image available</p>
     {% endif %}
 
-    <h3>Ingredients:</h3>
-    <div> 
-        <form>
-            {% for ingredient in ingredients %}
-                <div class="list-group-item">
-                    <input type="checkbox" id="{{ ingredient }}" name="ingredients">
-                    <label for="{{ ingredient }}">{{ ingredient }}</label>
+    <!-- Recipe Details -->
+    <div class="recipe-details">
+        <!-- Ingredients Section -->
+        <div class="recipe-section">
+            <h3>📝 Ingredients</h3>
+            <div class="ingredients-list">
+                <form>
+                    {% for ingredient in ingredients %}
+                        <div class="list-group-item">
+                            <input type="checkbox" id="{{ ingredient }}" name="ingredients">
+                            <label for="{{ ingredient }}">{{ ingredient }}</label>
+                        </div>
+                    {% endfor %}
+                </form>
+            </div>
+        </div>
+
+        <!-- Steps Section -->
+        <div class="recipe-section">
+            <h3>👨‍🍳 Steps</h3>
+                {% for step in instructions %}
+                    <li style="list-style-type: none;">{{ step }}</li>
+                {% endfor %}
+        </div>
+
+        <!-- Video Section -->
+        <div class="recipe-section">
+            <h3>🎥 Video Guide</h3>
+            {% if recipe.video_path %}
+                <div class="text-center">
+                    <video class="recipe-video shadow-sm" controls>
+                        <source src="{{ url_for('static', filename=recipe.video_path) }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
                 </div>
-            {% endfor %}
-        </form>
+            {% else %}
+                <p class="text-muted text-center">Sorry! Video recipe is not available yet.</p>
+            {% endif %}
+        </div>
     </div>
 
-    <h3>Steps:</h3>
-    {% for step in instructions %}
-        <p>{{ step }}.</p>
-    {% endfor %}
+    <!-- Likes & Ratings Section -->
+    <div class="interaction-section">
+        {% if current_user.is_authenticated %}
+            <!-- Like Button -->
+            <form id="like-form" data-url="{{ url_for('routes.like_recipe', recipe_id=recipe.id) }}" class="d-inline">
+                <button type="button" id="like-btn" class="btn">
+                    <i class="fa fa-heart {% if user_liked %} text-danger {% else %} text-secondary {% endif %}" id="like-icon"></i>
+                </button>
+                <span id="like-count">{{ recipe.likes|length }} {{ "Like" if recipe.likes|length == 1 else "Likes" }}</span>
+            </form>
 
-    <h3>Video: </h3>
-    {% if recipe.video_path %}
-    <video width="600" height="400" controls>
-        <source src="{{ url_for('static', filename=recipe.video_path) }}" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-    {% else %}
-    <p>Sorry! Video recipe is not available yet!</p>
-    {% endif %}
+            <!-- Rating System -->
+            <div class="rating" id="rating-container" data-url="{{ url_for('routes.rate_recipe', recipe_id=recipe.id) }}">
+                {% for i in range(1, 6) %}
+                    <i class="fa fa-star {% if user_rating and i <= user_rating %}selected{% endif %}" 
+                       data-value="{{ i }}"></i>
+                {% endfor %}
+            </div>
+            <!-- Display Average Rating -->
+            <div class="mt-2">
+                 <span class="text-warning">
+                    {% for i in range(1, 6) %}
+                        {% if i <= recipe.average_rating %}
+                             ★
+                        {% else %}
+                              ☆
+                         {% endif %}
+                     {% endfor %}
+        ({{ recipe.average_rating|round(1) }})
+    </span>
+            </div>
+
+            <span id="rating-feedback" class="text-success"></span>
+        {% else %}
+            <p class="text-center"><a href="{{ url_for('routes.user_login') }}" class="text-primary">Log in to like, rate, and comment on this recipe!</a></p>
+        {% endif %}
+    </div>
+
+    <!-- Comments Section -->
+    <div class="comments-section">
+        <h3>💬 Comments</h3>
+        <ul class="list-group">
+            {% for comment in recipe.comments %}
+                <li class="list-group-item">
+                    <strong>{{ comment.user.username }}</strong>: {{ comment.content }}
+                </li>
+            {% endfor %}
+        </ul>
+
+        {% if current_user.is_authenticated %}
+            <form action="{{ url_for('routes.add_comment', recipe_id=recipe.id) }}" method="POST">
+                <textarea name="content" class="form-control" placeholder="Add a comment..." required></textarea>
+                <button type="submit" class="btn btn-success mt-2">Post Comment</button>
+            </form>
+        {% endif %}
+    </div>
+
 </div>
 
-<!-- Like Button -->
-{% if current_user.is_authenticated %}
-<form id="like-form" data-url="{{ url_for('routes.like_recipe', recipe_id=recipe.id) }}" class="d-inline">
-    <button type="button" id="like-btn" class="btn">
-        <i class="fa fa-heart {% if user_liked %} text-danger {% else %} text-secondary {% endif %}" id="like-icon"></i>
-    </button>
-    <span id="like-count">{{ recipe.likes|length }} {{ "Like" if recipe.likes|length == 1 else "Likes" }}</span>
-</form>
+
 
 
 <script>
@@ -78,21 +148,6 @@
             .catch(error => console.error("Error:", error));
         });
     });
-</script>
-
-<!-- Rating System -->
-
-<div class="rating" id="rating-container" data-url="{{ url_for('routes.rate_recipe', recipe_id=recipe.id) }}">
-    {% for i in range(1, 6) %}
-        <i class="fa fa-star {% if user_rating and i <= user_rating %}selected{% endif %}" 
-           data-value="{{ i }}"></i>
-    {% endfor %}
-</div>
-<span id="rating-feedback" class="text-success"></span>
-
-
-<!-- JavaScript for AJAX Rating Submission -->
-<script>
     document.addEventListener("DOMContentLoaded", function () {
         let stars = document.querySelectorAll('.rating i');
         let ratingContainer = document.getElementById('rating-container');
@@ -128,42 +183,5 @@
         });
     });
 </script>
-
-
-<!-- Display Average Rating -->
-<div class="mt-2">
-    <span class="text-warning">
-        {% for i in range(1, 6) %}
-            {% if i <= recipe.average_rating %}
-                ★
-            {% else %}
-                ☆
-            {% endif %}
-        {% endfor %}
-        ({{ recipe.average_rating|round(1) }})
-    </span>
-</div>
-{% else %}
-<p><a href="{{ url_for('routes.user_login') }}" class="text-primary">Log in to like, rate and comment this recipe!</a></p>
-{% endif %}
-<!-- Comments Section -->
-<h3>Comments:</h3>
-<ul class="list-group">
-    {% for comment in recipe.comments %}
-        <li class="list-group-item">
-            <strong>{{ comment.user.username }}</strong>: {{ comment.content }}
-        </li>
-    {% endfor %}
-</ul>
-
-<!-- Add Comment -->
-<form action="{{ url_for('routes.add_comment', recipe_id=recipe.id) }}" method="POST">
-    <textarea name="content" class="form-control" placeholder="Add a comment..." required></textarea>
-    <button type="submit" class="btn btn-success mt-2">Post Comment</button>
-</form>
-
-
-
-
 
 {% endblock %}

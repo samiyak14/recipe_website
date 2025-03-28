@@ -1,27 +1,75 @@
-
-
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container text-center mt-5">
-    <h1 class="mb-4">Welcome to MyRecipeBook </h1>
-    <p class="lead">Search to find a collection of delicious recipes!</p>
+<div class="container mt-5">
 
-    <!-- 🔍 Search Form -->
-    <form action="{{ url_for('routes.search') }}" method="GET" class="d-flex justify-content-center">
-        <input type="text" name="q" class="form-control w-50 me-2" placeholder="Search recipes..." required>
-        <button type="submit" class="btn btn-primary">🔍 Search</button>
-    </form>
+    <!-- 🌟 Hero Section -->
+    <section class="hero-section text-center mb-5 p-5 rounded shadow-lg">
+        <h1 class="display-4 fw-bold">Welcome to MyRecipeBook</h1>
+        <p class="lead">Find and enjoy recipes crafted for every occasion!</p>
 
-    <script>
-        function clearSearchInput() {
-            document.getElementById("searchInput").value = "";
-        }
-        window.onload = function() {
-        if (window.location.pathname === "{{ url_for('routes.index') }}") {
-            history.replaceState({}, document.title, "{{ url_for('routes.index') }}");
-        }
-        };
-    </script>
+        <!-- 🔍 Search Form -->
+        <form action="{{ url_for('routes.search') }}" method="GET" class="d-flex justify-content-center mt-4">
+            <input type="text" name="q" class="form-control w-50 me-2 search-input" placeholder="Search recipes..." required>
+            <button type="submit" class="btn btn-primary btn-lg">🔍 Search</button>
+        </form>
+    </section>
+
+
+    <!-- 📚 Category Sections -->
+    <h2 class="text-center mb-4">Browse by Category</h2>
+
+    {% for category, recipes in categories.items() %}
+    <section class="category-section mb-5">
+        <h3 class="category-title">{{ category }}</h3>
+
+        <div class="row">
+            {% for recipe in recipes %}
+            <div class="col-md-4 mb-3">
+                <a href="{{ url_for('routes.view_recipe', recipe_id=recipe.id) }}" class="recipe-card-link text-decoration-none">
+                    <div class="recipe-card p-3 rounded shadow-sm h-100">
+                        <h5 class="fw-bold text-primary">{{ recipe.title }}</h5>
+                        <p class="text-muted small">{{ recipe.description[:100] }}{% if recipe.description|length > 100 %}...</p>{% endif %}
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- "See More" Link -->
+        <div class="text-end mt-3">
+            <a href="{{ url_for('routes.category', category=category) }}" class="btn btn-outline-success">See More →</a>
+        </div>
+    </section>
+    {% endfor %}
+
+</div>
+
+<!-- 📚 Cuisine Sections -->
+<h2 class="text-center mb-4">Browse by Cuisine</h2>
+
+{% for cuisine, recipes in cuisines.items() %}
+<section class="category-section mb-5">
+    <h3 class="category-title">{{ cuisine }}</h3>
+
+    <div class="row">
+        {% for recipe in recipes %}
+        <div class="col-md-4 mb-3 mt-3">
+            <a href="{{ url_for('routes.view_recipe', recipe_id=recipe.id) }}" class="recipe-card-link text-decoration-none">
+                <div class="recipe-card p-3 rounded shadow-sm h-100">
+                    <h5 class="fw-bold text-primary">{{ recipe.title }}</h5>
+                    <p class="text-muted small">{{ recipe.description[:100] }}{% if recipe.description|length > 100 %}...</p>{% endif %}
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    <!-- "See More" Link -->
+        <div class="text-end mt-3">
+            <a href="{{ url_for('routes.cuisine', cuisine=cuisine) }}" class="btn btn-outline-success">See More →</a>
+        </div>
+</section>
+{% endfor %}
+
 </div>
 {% endblock %}

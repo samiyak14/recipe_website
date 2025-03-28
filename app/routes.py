@@ -13,11 +13,72 @@ import re
 
 bp = Blueprint('routes', __name__)
 
-@bp.route('/')
+@bp.route('/', methods=['GET'])
 def index():
-    recipes = Recipe.query.filter_by(is_premium=False).all() 
-    return render_template('index.html', recipes=recipes)
+    # Define category names with corresponding tags
+    category_tags = {
+        "Breakfast": ["breakfast", "morning", "brunch"],
+        "Lunch": ["lunch", "midday", "quick-lunch"],
+        "Dinner": ["dinner", "evening", "supper"],
+        "Desserts": ["dessert", "sweet", "baking","desert"],
+        "Healthy": ["healthy", "low-fat", "nutritious"],
+        "Quick & Easy": ["quick", "easy", "fast","5min","one-pan"]
+    }
+    cuisine_tags={
+        "Indian":["india","indian","desi","marathi","south-indian","south indian"],
+        "Mexican":["mexico","mexican"],
+        "Italian":["italian","italy"],
+        "Chinese":["china","chinese"]
+    }
 
+    categories = {}
+    cuisines={}
+    # Retrieve recipes for each category by checking tags (case-insensitive search)
+    for category, tags in category_tags.items():
+        categories[category] = Recipe.query.filter(
+            db.or_(*(Recipe.tags.ilike(f"%{tag}%") for tag in tags))
+        ).limit(6).all()
+
+    for cuisine,tags in cuisine_tags.items():
+        cuisines[cuisine]=Recipe.query.filter(
+            db.or_(*(Recipe.tags.ilike(f"%{tag}%") for tag in tags))
+        ).limit(6).all()
+
+    return render_template('index.html', categories=categories, cuisines=cuisines)
+
+@bp.route('/category/<category>')
+def category(category):
+    # Map category to corresponding tags
+    category_tags = {
+        "Breakfast": ["breakfast", "morning", "brunch"],
+        "Lunch": ["lunch", "midday", "quick-lunch"],
+        "Dinner": ["dinner", "evening", "supper"],
+        "Desserts": ["dessert", "sweet", "baking"],
+        "Healthy": ["healthy", "low-fat", "nutritious"],
+        "Quick & Easy": ["quick", "easy", "fast"]
+    }
+
+    if category not in category_tags:
+        abort(404)  # Category not found
+
+    tags = category_tags[category]
+    recipes = Recipe.query.filter(db.or_(*(Recipe.tags.ilike(f"%{tag}%") for tag in tags))).all()
+
+    return render_template('category.html', category=category, recipes=recipes)
+
+@bp.route('/cuisine/<cuisine>')
+def cuisine(cuisine):
+    cuisine_tags={
+        "Indian":["india","indian","desi","marathi","south-indian","south indian"],
+        "Mexican":["mexico","mexican"],
+        "Italian":["italian","italy"],
+        "Chinese":["china","chinese"]
+    }
+    if cuisine not in cuisine_tags:
+        abort(404)
+    tags=cuisine_tags[cuisine]
+    recipes=Recipe.query.filter(db.or_(*(Recipe.tags.ilike(f"%{tag}%")for tag in tags))).all()
+    return render_template('cuisine.html',cuisine=cuisine ,recipes=recipes)
 
 @bp.route('/recipes')
 def recipes():
@@ -51,18 +112,23 @@ def admin_login():
 
     return render_template('admin_login.html')
 
-
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'admin_logged_in' not in session:
-            flash('You must log in first', 'warning')
-            return redirect(url_for('admin_login'))
+        # Ensure the user is authenticated and is an admin
+        if not current_user.is_authenticated:
+            flash('You must be logged in to access this page.', 'warning')
+            return redirect(url_for('routes.user_login'))
+        if not current_user.is_admin:
+            flash('Access denied. Admins only.', 'danger')
+            return redirect(url_for('routes.index'))
         return f(*args, **kwargs)
     return decorated_function
 
+# Admin Dashboard Route
 @bp.route('/admin/dashboard')
-@admin_required
+@login_required  # Ensures user is logged in
+@admin_required  # Ensures user is an admin
 def admin_dashboard():
     recipes = Recipe.query.all() 
     return render_template('admin_dashboard.html', recipes=recipes)
@@ -165,7 +231,7 @@ def view_recipe(recipe_id):
     recipe = Recipe.query.get_or_404(recipe_id)
     formatted_instructions = []
     if recipe.instructions:
-        formatted_instructions = [ s.strip() for s in re.split(r'[.\n]+', recipe.instructions) if s.strip() ]
+        formatted_instructions = [ s.strip() for s in re.split(r'[\n]+', recipe.instructions) if s.strip() ]
     formatted_ingredients = []
     if recipe.ingredients:
         formatted_ingredients = [ s.strip() for s in re.split(r'[\n,]+', recipe.ingredients) if s.strip() ]

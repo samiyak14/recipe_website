@@ -386,14 +386,56 @@ def rate_recipe(recipe_id):
 
     return jsonify({"success": True, "rating": rating_value})
 
-    
 @bp.route('/comment/<int:recipe_id>', methods=['POST'])
 @login_required
+@login_required
 def add_comment(recipe_id):
-    content = request.form.get('content', '').strip()
-    if content:
-        new_comment = Comment(user_id=current_user.id, recipe_id=recipe_id, content=content)
-        db.session.add(new_comment)
-        db.session.commit()
+    data = request.get_json()
+    if not data or 'content' not in data:
+        return jsonify({"error": "Invalid request format"}), 400
+
+    content = data['content'].strip()
+    if not content:
+        return jsonify({"error": "Comment cannot be empty."}), 400
+
+    new_comment = Comment(content=content, user_id=current_user.id, recipe_id=recipe_id)
+    db.session.add(new_comment)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Comment added successfully.",
+        "comment": {
+            "id": new_comment.id,
+            "username": current_user.username,
+            "content": new_comment.content
+        }
+    }), 201
+   
     
-    return redirect(url_for('routes.view_recipe', recipe_id=recipe_id))
+@bp.route('/delete_comment', methods=['POST'])
+@login_required
+def delete_comment():
+    if not current_user.is_admin:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    try:
+        data = request.get_json()
+        comment_id = data.get('comment_id')
+
+        if not comment_id:
+            return jsonify({"error": "Missing comment ID"}), 400
+
+        comment = Comment.query.get(comment_id)
+
+        if not comment:
+            return jsonify({"error": "Comment not found"}), 404
+
+        db.session.delete(comment)
+        db.session.commit()
+
+        return jsonify({"message": "Comment deleted successfully"})
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+

@@ -143,6 +143,16 @@ body {
 
 }
 
+.category-title.text-primary1 {
+    color: #445b1a; /* Olive Green */
+}
+
+.category-title.text-primary1:hover {
+    color: #6B8E23; /* Different color on hover */
+}
+
+
+
 
 /* Card Styling */
 .recipe-card {
@@ -298,7 +308,19 @@ footer {
 .category-title {
     font-weight: bold;
     font-family: 'Playfair Display', serif;
-    color: var(--accent);
+    font-size: 3rem; /* Makes the title much larger */
+    line-height: 1; /* Adjusts line height for better spacing */
+    text-transform: capitalize; /* Optional: Capitalizes each word */
+}
+
+.category-title:hover {
+    color: #6B8E23 ;
+
+}
+
+.browseby{
+    font-weight: bold;
+    font-family: 'Playfair Display', serif;
 }
 
 /* Recipe Card Styling */
@@ -319,8 +341,20 @@ footer {
     border: none;
 }
 
+.see-more-btn-accent {
+    background-color: var(--accent);
+    color: white;
+    border: none;
+}
+
+
+
 .btn-accent:hover {
     background-color: #556B2F; /* Darker olive green */
+}
+
+.see-more-btn-accent:hover {
+    background-color: #fcfdf9; /* Darker olive green */
 }
 
 .search-input {
@@ -329,4 +363,12 @@ footer {
    border: 1px solid var(--border-light);
     }
 
-
+.category-link {
+    text-decoration: none; /* No underline */
+    color: inherit; /* Keeps the original text color */
+    }
+    
+.category-link:hover, .category-link:visited {
+    color: inherit; /* Prevents color change on hover or after visiting */
+}
+    

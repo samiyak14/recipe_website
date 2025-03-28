@@ -95,26 +95,39 @@
         {% endif %}
     </div>
 
-    <!-- Comments Section -->
-    <div class="comments-section">
-        <h3>💬 Comments</h3>
-        <ul class="list-group">
-            {% for comment in recipe.comments %}
-                <li class="list-group-item">
+   <!-- Comments Section -->
+   <div class="comments-section">
+    <h3>💬 Comments</h3>
+
+    <!-- Comment List -->
+    <ul id="comment-list" class="list-group">
+        {% for comment in recipe.comments %}
+            <li id="comment-{{ comment.id }}" class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
                     <strong>{{ comment.user.username }}</strong>: {{ comment.content }}
-                </li>
-            {% endfor %}
-        </ul>
+                </div>
 
-        {% if current_user.is_authenticated %}
-            <form action="{{ url_for('routes.add_comment', recipe_id=recipe.id) }}" method="POST">
-                <textarea name="content" class="form-control" placeholder="Add a comment..." required></textarea>
-                <button type="submit" class="btn btn-success mt-2">Post Comment</button>
-            </form>
-        {% endif %}
-    </div>
+                {% if current_user.is_authenticated and current_user.is_admin %}
+                <!-- Delete Button (Admin Only) -->
+                <button class="btn btn-danger btn-sm"
+                        onclick="deleteComment({{ comment.id }})">
+                    🗑️ Delete
+                </button>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
 
+    <!-- Add Comment Form (AJAX) -->
+    {% if current_user.is_authenticated %}
+        <form id="comment-form" class="mt-3" onsubmit="addComment(event, {{ recipe.id }})">
+            <textarea id="comment-content" class="form-control" placeholder="Add a comment..." required></textarea>
+            <button type="submit" class="btn btn-success mt-2">Post Comment</button>
+        </form>
+    {% endif %}
 </div>
+
+
 
 
 
@@ -182,6 +195,85 @@
             });
         });
     });
+
+ // Add a Comment (AJAX)
+function addComment(event, recipeId) {
+    event.preventDefault(); // Prevent the form from submitting traditionally
+
+    const commentContent = document.getElementById('comment-content');
+    const commentList = document.getElementById('comment-list');
+    const content = commentContent.value.trim();
+
+    if (!content) return alert('Comment cannot be empty.');
+
+    // Dynamically create the correct URL
+    const addCommentURL = `/comment/${recipeId}`;
+
+
+
+    fetch(addCommentURL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: content })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.comment) {
+            // Create a new comment element
+            const newComment = document.createElement('li');
+            newComment.className = 'list-group-item d-flex justify-content-between align-items-center';
+            newComment.id = `comment-${data.comment.id}`;
+            newComment.innerHTML = `
+                <div>
+                    <strong>${data.comment.username}</strong>: ${data.comment.content}
+                </div>
+                {% if current_user.is_authenticated and current_user.is_admin %}
+                    <button onclick="deleteComment(${data.comment.id})" class="btn btn-danger btn-sm">🗑️ Delete</button>
+                {% endif %}
+            `;
+
+            // Append the new comment to the list and clear the input
+            commentList.appendChild(newComment);
+            commentContent.value = '';
+        } else {
+            alert(data.error || 'Failed to add comment.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error posting comment.');
+    });
+}
+
+
+    function deleteComment(commentId) {
+        fetch("{{ url_for('routes.delete_comment') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ comment_id: commentId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const commentElement = document.getElementById(`comment-${commentId}`);
+            if (commentElement) {
+                commentElement.innerHTML = '<em>Comment deleted</em>';
+
+                setTimeout(() => {
+                        commentElement.remove();
+                    }, 5000);
+            }
+            
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to delete comment.');
+        });
+    }
 </script>
+
 
 {% endblock %}

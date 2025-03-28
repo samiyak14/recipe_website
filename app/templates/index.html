@@ -15,13 +15,17 @@
         </form>
     </section>
 
-
     <!-- 📚 Category Sections -->
-    <h2 class="text-center mb-4">Browse by Category</h2>
+    <h1 class="text-center mb-4 browseby">Browse by Category</h1>
 
     {% for category, recipes in categories.items() %}
-    <section class="category-section mb-5">
-        <h3 class="category-title">{{ category }}</h3>
+    <h1 class="category-title text-primary1">
+        <a href="{{ url_for('routes.category', category=category) }}" class="category-link">
+            {{ category }}
+        </a>
+    </h1>
+    <section class="category-section mb-5  p-4 rounded" style="background: url('{{ url_for('static', filename='images/categories/' + category|lower + '.jpg') }}') no-repeat center center / cover;">
+    
 
         <div class="row">
             {% for recipe in recipes %}
@@ -36,25 +40,33 @@
             {% endfor %}
         </div>
 
-        <!-- "See More" Link -->
-        <div class="text-end mt-3">
-            <a href="{{ url_for('routes.category', category=category) }}" class="btn btn-outline-success">See More →</a>
-        </div>
+        {% if recipes|length > 6 %}
+    <div class="text-end mt-3">
+        <a href="{{ url_for('routes.category', category=category) }}" class="btn see-more-btn-accent">See More →</a>
+    </div>
+    {% endif %}
+
     </section>
     {% endfor %}
 
 </div>
 
 <!-- 📚 Cuisine Sections -->
-<h2 class="text-center mb-4">Browse by Cuisine</h2>
+<h1 class="text-center mb-4 browseby">Browse by Cuisine</h1>
 
 {% for cuisine, recipes in cuisines.items() %}
-<section class="category-section mb-5">
-    <h3 class="category-title">{{ cuisine }}</h3>
+<h1 class="category-title text-primary1">
+    <a href="{{ url_for('routes.cuisine', cuisine=cuisine) }}" class="category-link">
+        {{ cuisine }}
+    </a>
+</h1>
+<section class="category-section mb-5  p-4 rounded" style="background: url('{{ url_for('static', filename='images/cuisines/' + cuisine|lower + '.jpg') }}') no-repeat center center / cover;">
+
+   
 
     <div class="row">
         {% for recipe in recipes %}
-        <div class="col-md-4 mb-3 mt-3">
+        <div class="col-md-4 mb-3 ">
             <a href="{{ url_for('routes.view_recipe', recipe_id=recipe.id) }}" class="recipe-card-link text-decoration-none">
                 <div class="recipe-card p-3 rounded shadow-sm h-100">
                     <h5 class="fw-bold text-primary">{{ recipe.title }}</h5>
@@ -64,10 +76,13 @@
         </div>
         {% endfor %}
     </div>
-    <!-- "See More" Link -->
-        <div class="text-end mt-3">
-            <a href="{{ url_for('routes.cuisine', cuisine=cuisine) }}" class="btn btn-outline-success">See More →</a>
-        </div>
+
+    {% if recipes|length > 6 %}
+    <div class="text-end mt-3">
+        <a href="{{ url_for('routes.category', category=category) }}" class="btn see-more-btn-accent">See More →</a>
+    </div>
+    {% endif %}
+
 </section>
 {% endfor %}
 

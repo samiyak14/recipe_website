@@ -338,6 +338,7 @@ def search():
     results = Recipe.query.filter(
         (Recipe.title.ilike(f"%{query}%")) |
         (Recipe.tags.ilike(f"%{query}%")) |
+        (Recipe.ingredients.ilike(f"%{query}%")) |
         (Recipe.description.ilike(f"%{query}%"))
     ).all()
 
